@@ -232,15 +232,15 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   }
 
   // Define a function 'sellItem' that allows a creator to mark an item 'ForSale'
-  function sellItem(uint _upc, uint _price) public 
+  function sellItem(uint _upc, uint _price) public
   // Call modifier to check if upc has passed previous supply chain stage
     published(_upc)
-  
   // Call modifier to verify caller of this function
     onlyCreator()
-  
+
   {
     // Update the appropriate fields
+      items[sku].productPrice = _price;
       items[sku].itemState = State.ForSale;
     // Emit the appropriate event
         emit ForSale(_upc);
@@ -293,13 +293,13 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
     // Update the appropriate fields - ownerID, consumerID, itemState
       address ownerID = msg.sender;
       items[sku].consumerID = ownerID;
-      items[sku].itemState = State.Sold;
+      items[sku].itemState = State.Purchased;
     // Emit the appropriate event
     emit Purchased(_upc);
   }
 
   // Define a function 'fetchItemBufferOne' that fetches the data
-  function fetchItemBufferOne(uint _upc) public view returns
+  function fetchItemBufferOne(uint _upc) public pure returns
   (
   uint    itemSKU,
   uint    itemUPC,
@@ -326,7 +326,7 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   }
 
   // Define a function 'fetchItemBufferTwo' that fetches the data
-  function fetchItemBufferTwo(uint _upc) public view returns
+  function fetchItemBufferTwo(uint _upc) public pure returns
   (
   uint    itemSKU,
   uint    itemUPC,
