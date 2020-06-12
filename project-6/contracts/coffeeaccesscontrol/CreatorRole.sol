@@ -40,13 +40,13 @@ contract CreatorRole {
     _removeCreator(msg.sender);
   }
 
-  // Define an internal function '_addCreator' to add this role, called by 'addFarmer'
+  // Define an internal function '_addCreator' to add this role, called by 'addCreator'
   function _addCreator(address account) internal {
     creators.add(account);
     emit CreatorAdded(account);
   }
 
-  // Define an internal function '_removeCreator' to remove this role, called by 'removeFarmer'
+  // Define an internal function '_removeCreator' to remove this role, called by 'removeCreator'
   function _removeCreator(address account) internal {
     creators.remove(account);
     emit CreatorRemoved(account);
