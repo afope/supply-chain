@@ -7,17 +7,17 @@ contract('SupplyChain', function(accounts) {
     var sku = 1
     var upc = 1
     const ownerID = accounts[0]
-    const originFarmerID = accounts[1]
-    const originFarmName = "John Doe"
-    const originFarmInformation = "Yarray Valley"
-    const originFarmLatitude = "-38.239770"
-    const originFarmLongitude = "144.341490"
+    const originCreatorID = accounts[1]
+    const originCreatorName = "Bai"
+    const originCreatorInformation = "Yabbah Valley"
+    const originPoemCountry = "Ghana"
+    const originPoemTitle = "Wote Wote"
     var productID = sku + upc
-    const productNotes = "Best beans for Espresso"
+    const productNotes = "Na de wote dey wote"
     const productPrice = web3.toWei('1', "ether")
     var itemState = 0
-    const distributorID = accounts[2]
-    const retailerID = accounts[3]
+    // const distributorID = accounts[2]
+    // const retailerID = accounts[3]
     const consumerID = accounts[4]
     const emptyAddress = '0x00000000000000000000000000000000000000'
 
@@ -42,34 +42,35 @@ contract('SupplyChain', function(accounts) {
     console.log("Consumer: accounts[4] ", accounts[4])
 
     // 1st Test
-    it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
+    it("Testing smart contract function writeItem() that allows a creator to make something", async() => {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
         var eventEmitted = false
         
-        // Watch the emitted event Harvested()
-        var event = supplyChain.Harvested()
+        // Watch the emitted event Wriiten()
+        var event = supplyChain.Written()
         await event.watch((err, res) => {
             eventEmitted = true
         })
 
-        // Mark an item as Harvested by calling function harvestItem()
-        await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // Mark an item as Harvested by calling function writeItem()
+        await supplyChain.writeItem(upc, originCreatorID, originCreatorName, originCreatorInformation, originPoemCountry, originPoemTitle, productID,  productNotes)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
         const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        console.log('result buffer one', resultBufferOne)
 
         // Verify the result set
-        assert.equal(resultBufferOne[0], sku, 'Error: Invalid item SKU')
+        assert.equal(resultBufferOne[0].toNumber(), sku, 'Error: Invalid item SKU')
         assert.equal(resultBufferOne[1], upc, 'Error: Invalid item UPC')
-        assert.equal(resultBufferOne[2], originFarmerID, 'Error: Missing or Invalid ownerID')
-        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID')
-        assert.equal(resultBufferOne[4], originFarmName, 'Error: Missing or Invalid originFarmName')
-        assert.equal(resultBufferOne[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
-        assert.equal(resultBufferOne[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
-        assert.equal(resultBufferOne[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
+        assert.equal(resultBufferOne[2], ownerID, 'Error: Missing or Invalid ownerID')
+        assert.equal(resultBufferOne[3], originCreatorID, 'Error: Missing or Invalid originCreatorID')
+        assert.equal(resultBufferOne[4], originCreatorName, 'Error: Missing or Invalid originCreatorName')
+        assert.equal(resultBufferOne[5], originCreatorInformation, 'Error: Missing or Invalid originCreatorInformation')
+        assert.equal(resultBufferOne[6], originPoemCountry, 'Error: Missing or Invalid originPoemCountry')
+        assert.equal(resultBufferOne[7], originPoemTitle, 'Error: Missing or Invalid originPoemTitlr')
         assert.equal(resultBufferTwo[5], 0, 'Error: Invalid item State')
         assert.equal(eventEmitted, true, 'Invalid event emitted')        
     })    

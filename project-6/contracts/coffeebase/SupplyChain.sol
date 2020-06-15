@@ -8,9 +8,6 @@ import "../coffeecore/Ownable.sol";
 // Define a contract 'Supplychain'
 contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
 
-  // Define 'owner'
-    //address owner;
-
   // Define a variable called 'upc' for Universal Product Code (UPC)
   uint  upc;
 
@@ -171,7 +168,7 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   function writeItem(uint _upc, address _originCreatorID, string _originCreatorName, string _originCreatorInformation, string  _originPoemCountry, string  _originPoemTitle, uint _productID, string  _productNotes ) public
   {
     // Add the new item as part of Written
-    items[sku]= Item({sku:sku, upc:_upc, ownerID:msg.sender, originCreatorID:_originCreatorID, originCreatorName:_originCreatorName,originCreatorInformation:_originCreatorInformation,originPoemCountry:_originPoemCountry,originPoemTitle:_originPoemTitle, productID:_productID, productNotes:_productNotes, productPrice:1, itemState:State.Written, consumerID:0, editorID:0, editingPrice:1});
+    items[sku]= Item({sku:sku, upc:_upc, ownerID:msg.sender, originCreatorID:_originCreatorID, originCreatorName:_originCreatorName, originCreatorInformation:_originCreatorInformation, originPoemCountry:_originPoemCountry, originPoemTitle:_originPoemTitle, productID:_productID, productNotes:_productNotes, productPrice:1, itemState:State.Written, consumerID:0, editorID:0, editingPrice:1});
 
     // Increment sku
     sku = sku + 1;
@@ -299,10 +296,10 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   }
 
   // Define a function 'fetchItemBufferOne' that fetches the data
-  function fetchItemBufferOne(uint _upc) public pure returns
+  function fetchItemBufferOne(uint _upc) public view returns
   (
-  uint    itemSKU,
-  uint    itemUPC,
+  uint sku,
+  uint upc,
   address ownerID,
   address originCreatorID,
   string  originCreatorName,
@@ -312,45 +309,45 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   )
 {
   // Assign values to the 8 parameters
+  Item memory item = items[_upc];
   return
   (
-  itemSKU,
-  itemUPC,
-  ownerID,
-  originCreatorID,
-  originCreatorName,
-  originCreatorInformation,
-  originPoemCountry,
-  originPoemTitle
+  item.sku,
+  item.upc,
+  item.ownerID,
+  item.originCreatorID,
+  item.originCreatorName,
+  item.originCreatorInformation,
+  item.originPoemCountry,
+  item.originPoemTitle
   );
   }
 
   // Define a function 'fetchItemBufferTwo' that fetches the data
-  function fetchItemBufferTwo(uint _upc) public pure returns
+  function fetchItemBufferTwo(uint _upc) public view returns
   (
-  uint    itemSKU,
-  uint    itemUPC,
+  uint    sku,
+  uint    upc,
   uint    productID,
   string  productNotes,
   uint    productPrice,
-  uint    itemState,
+  State    itemState,
   address editorID,
   address consumerID
   )
   {
     // Assign values to the 9 parameters
-
-
+  Item memory item = items[_upc];
   return
   (
-  itemSKU,
-  itemUPC,
-  productID,
-  productNotes,
-  productPrice,
-  itemState,
-  editorID,
-  consumerID
+  item.sku,
+  item.upc,
+  item.productID,
+  item.productNotes,
+  item.productPrice,
+  item.itemState,
+  item.editorID,
+  item.consumerID
   );
   }
 }
