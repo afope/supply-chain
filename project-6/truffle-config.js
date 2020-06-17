@@ -1,7 +1,8 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
-const infuraKey = "";
+require('dotenv').config(); // Store environment-specific variable from '.env' to process.env
 
-const mnemonic = ""
+const infuraKey = process.env.INFURAKEY;
+const mnemonic = process.env.MNEMONIC;
 
 module.exports = {
   compilers: {
