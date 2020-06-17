@@ -8,6 +8,9 @@ import "../coffeecore/Ownable.sol";
 // Define a contract 'Supplychain'
 contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
 
+    // Define 'owner'
+  address owner;
+
   // Define a variable called 'upc' for Universal Product Code (UPC)
   uint  upc;
 
@@ -28,10 +31,10 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
     Edited,  // 1
     Published,     // 2
     Read,  // 3
-    ForSale, // 5
-    Sold, // 6
-    //Received, // 7
-    Purchased // 8
+    ForSale, // 4
+    Sold, // 5
+    Shipped, // 6
+    Purchased // 7
     }
 
   State constant defaultState = State.Written;
@@ -52,7 +55,6 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
     uint editingPrice; // Product editing price
     State   itemState;  // Product State as represented in the enum above
     address editorID;  // Metamask-Ethereum address of the Distributor
-    // address retailerID; // Metamask-Ethereum address of the Retailer
     address consumerID; // Metamask-Ethereum address of the Consumer
   }
 
@@ -68,7 +70,7 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
 
   // Define a modifer that checks to see if msg.sender == owner of the contract
   modifier onlyOwner() {
-    require(msg.sender == owner());
+    require(msg.sender == owner);
     _;
   }
 
@@ -92,14 +94,6 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
     items[_upc].consumerID.transfer(amountToReturn);
   }
 
-  // Define a modifier that checks the editing price and refunds the remaining balance
-  modifier checkEditingValue(uint _upc) {
-    _;
-    uint _price = items[_upc].editingPrice;
-    uint amountToReturn = msg.value - _price;
-    items[_upc].consumerID.transfer(amountToReturn);
-  }
-
   // Define a modifier that checks if an item.state of a upc is Written
   modifier written(uint _upc) {
     require(items[_upc].itemState == State.Written);
@@ -112,35 +106,36 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
     _;
   }
   
+
   // Define a modifier that checks if an item.state of a upc is Published
   modifier published(uint _upc) {
     require(items[_upc].itemState == State.Published);
     _;
   }
 
-  // Define a modifier that checks if an item.state of a upc is Read
-  modifier forSale(uint _upc) {
+    // Define a modifier that checks if an item.state of a upc is Read
+  modifier read(uint _upc) {
     require(items[_upc].itemState == State.Read);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is ForSale
-  modifier sold(uint _upc) {
+  modifier forSale(uint _upc) {
     require(items[_upc].itemState == State.ForSale);
     _;
   }
-  
+
   // Define a modifier that checks if an item.state of a upc is Sold
-  modifier shipped(uint _upc) {
+  modifier sold(uint _upc) {
     require(items[_upc].itemState == State.Sold);
     _;
   }
-
-  // // Define a modifier that checks if an item.state of a upc is Received
-  // modifier received(uint _upc) {
-  //   require(items[_upc].itemState == State.Received);
-  //   _;
-  // }
+  
+  // Define a modifier that checks if an item.state of a upc is Shipped
+  modifier shipped(uint _upc) {
+    require(items[_upc].itemState == State.Shipped);
+    _;
+  }
 
   // Define a modifier that checks if an item.state of a upc is Purchased
   modifier purchased(uint _upc) {
@@ -152,62 +147,52 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   // and set 'sku' to 1
   // and set 'upc' to 1
   constructor() public payable {
-    owner();
+    owner = msg.sender;
     sku = 1;
     upc = 1;
   }
 
-  // // Define a function 'kill' if required
-  // function kill() public {
-  //   if (msg.sender == owner) {
-  //     selfdestruct(owner);
-  //   }
-  // }
-
   // Define a function 'writeItem' that allows a farmer to mark an item 'Written'
-  function writeItem(uint _upc, address _originCreatorID, string _originCreatorName, string _originCreatorInformation, string  _originPoemCountry, string  _originPoemTitle, uint _productID, string  _productNotes ) public
+  function writeItem(uint _upc, address _originCreatorID, string _originCreatorName, string _originCreatorInformation, string  _originPoemCountry, string  _originPoemTitle, uint _productID, string  _productNotes) public
+    onlyCreator()
   {
+    address editorID; // empty editorID address
+    address consumerID; // empty consumerID address
     // Add the new item as part of Written
-    items[sku]= Item({sku:sku, upc:_upc, ownerID:msg.sender, originCreatorID:_originCreatorID, originCreatorName:_originCreatorName, originCreatorInformation:_originCreatorInformation, originPoemCountry:_originPoemCountry, originPoemTitle:_originPoemTitle, productID:_productID, productNotes:_productNotes, productPrice:1, itemState:State.Written, consumerID:0, editorID:0, editingPrice:1});
+    items[_upc]= Item({sku:sku, upc:_upc, ownerID:msg.sender, originCreatorID:_originCreatorID, originCreatorName:_originCreatorName, originCreatorInformation:_originCreatorInformation, originPoemCountry:_originPoemCountry, originPoemTitle:_originPoemTitle, productID:_productID, productNotes:_productNotes, productPrice:1, itemState:State.Written, consumerID:consumerID, editorID:editorID, editingPrice:1});
 
     // Increment sku
     sku = sku + 1;
 
     // Emit the appropriate event
     emit Written(_upc);
-
   }
 
   // Define a function 'editItem' that allows a creator to mark an item 'Edited'
-  function editItem(uint _upc) public payable
+  function editItem(uint _upc) public
   // Call modifier to check if upc has passed previous supply chain stage
+      onlyEditor()
       written(_upc)
-      paidEnough(_upc)
-      checkEditingValue(_upc)
-  // Call modifier to verify caller of this function
-    onlyCreator()
-    onlyEditor()
-
   {
     // Update the appropriate fields
-    address editorID = msg.sender;
-    uint editingPrice = items[sku].editingPrice;
-    items[sku].editorID = editorID;
-    items[sku].itemState = State.Edited;
-    items[sku].editorID.transfer(editingPrice);
+    items[_upc].ownerID = msg.sender; // update owner
+    items[_upc].editorID = msg.sender;
+    items[_upc].itemState = State.Edited;
     // Emit the appropriate event
     emit Edited(_upc);
   }
 
   // Define a function 'publishItem' that allows a creator to mark an item 'Published'
   function publishItem(uint _upc) public
+    // Call modifier to verify caller of this function
+    onlyCreator()
   // Call modifier to check if upc has passed previous supply chain stage
     edited(_upc)
-  // Call modifier to verify caller of this function
-    onlyCreator()
   {
+    items[_upc].ownerID = msg.sender;
+    items[_upc].originCreatorID = msg.sender;
     // Update the appropriate fields
-    items[sku].itemState = State.Published;
+    items[_upc].itemState = State.Published;
 
     // Emit the appropriate event
     emit Published(_upc);
@@ -216,14 +201,15 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
 
     // Define a function 'readItem' that allows a consumer to mark an item 'Read'
   function readItem(uint _upc) public 
+    // Call modifier to verify caller of this function
+    onlyConsumer()
   // Call modifier to check if upc has passed previous supply chain stage
     published(_upc)
-  // Call modifier to verify caller of this function
-    onlyConsumer()
   {
     // Update the appropriate fields
-    items[sku].itemState = State.Read;
-    
+    items[_upc].ownerID = msg.sender;
+    items[_upc].consumerID = msg.sender;
+    items[_upc].itemState = State.Read;
     // Emit the appropriate event
     emit Read(_upc);
   }
@@ -231,56 +217,62 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
   // Define a function 'sellItem' that allows a creator to mark an item 'ForSale'
   function sellItem(uint _upc, uint _price) public
   // Call modifier to check if upc has passed previous supply chain stage
-    published(_upc)
+    read(_upc)
   // Call modifier to verify caller of this function
     onlyCreator()
 
   {
+      items[_upc].ownerID = msg.sender;
+      items[_upc].originCreatorID = msg.sender;
     // Update the appropriate fields
-      items[sku].productPrice = _price;
-      items[sku].itemState = State.ForSale;
+      items[_upc].productPrice = _price;
+      items[_upc].itemState = State.ForSale;
     // Emit the appropriate event
         emit ForSale(_upc);
   }
 
-  // Define a function 'buyItem' that allows the disributor to mark an item 'Sold'
+  // Define a function 'buyItem' that allows the creator to mark an item 'Sold'
   // Use the above defined modifiers to check if the item is available for sale, if the buyer has paid enough,
   // and any excess ether sent is refunded back to the buyer
   function buyItem(uint _upc) public payable
     // Call modifier to check if upc has passed previous supply chain stage
-      sold(_upc)
+      forSale(_upc)
     // Call modifer to check if buyer has paid enough
-      paidEnough(_upc)
+      paidEnough(items[_upc].productPrice)
     // Call modifer to send any excess ether back to buyer
       checkValue(_upc)
+      onlyConsumer()
     {
     // Update the appropriate fields - ownerID, distributorID, itemState
-      address ownerID = msg.sender;
       uint price = items[sku].productPrice;
-      items[sku].consumerID = ownerID;
-      items[sku].itemState = State.Sold;
+      items[_upc].ownerID = msg.sender;
+      items[_upc].consumerID = msg.sender;
+      items[_upc].itemState = State.Sold;
     // Transfer money to farmer
-      items[sku].originCreatorID.transfer(price);
+      items[_upc].originCreatorID.transfer(price);
     // emit the appropriate event
       emit Sold(_upc);
   }
 
-  // // Define a function 'shipItem' that allows the distributor to mark an item 'Shipped'
-  // // Use the above modifers to check if the item is sold
-  // function shipItem(uint _upc) public
-  //   // Call modifier to check if upc has passed previous supply chain stage
-  //       sold(_upc)
-  //   // Call modifier to verify caller of this function
-  //       onlyCreator()
-  //   {
-  //   // Update the appropriate fields
-  //       items[sku].itemState = State.S;
-  //   // Emit the appropriate event
-  //     emit Shipped(_upc);
-  // }
+  // Define a function 'shipItem' that allows the creator to mark an item 'Shipped'
+  // Use the above modifers to check if the item is sold
+  function shipItem(uint _upc) public
+    // Call modifier to check if upc has passed previous supply chain stage
+        sold(_upc)
+    // Call modifier to verify caller of this function
+        onlyCreator()
+    {
+    // Update the appropriate fields
+        items[_upc].ownerID = msg.sender;
+        items[_upc].originCreatorID = msg.sender;
+        items[_upc].itemState = State.Shipped;
+    // Emit the appropriate event
+      emit Shipped(_upc);
+  }
 
   // Define a function 'purchaseItem' that allows the consumer to mark an item 'Purchased'
   // Use the above modifiers to check if the item is received
+
   function purchaseItem(uint _upc) public
     // Call modifier to check if upc has passed previous supply chain stage
       shipped(_upc)
@@ -288,9 +280,9 @@ contract SupplyChain is Ownable, ConsumerRole,  EditorRole, CreatorRole {
       onlyConsumer()
     {
     // Update the appropriate fields - ownerID, consumerID, itemState
-      address ownerID = msg.sender;
-      items[sku].consumerID = ownerID;
-      items[sku].itemState = State.Purchased;
+      items[_upc].ownerID = msg.sender;
+      items[_upc].consumerID = msg.sender;
+      items[_upc].itemState = State.Purchased;
     // Emit the appropriate event
     emit Purchased(_upc);
   }
