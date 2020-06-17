@@ -293,8 +293,8 @@ contract SupplyChain is Ownable, ConsumerRole, EditorRole, CreatorRole {
     // Define a function 'fetchItemBufferOne' that fetches the data
     function fetchItemBufferOne(uint _upc) public view returns
     (
-        uint sku,
-        uint upc,
+        uint itemSKU,
+        uint itemUPC,
         address ownerID,
         address originCreatorID,
         string originCreatorName,
@@ -321,8 +321,8 @@ contract SupplyChain is Ownable, ConsumerRole, EditorRole, CreatorRole {
     // Define a function 'fetchItemBufferTwo' that fetches the data
     function fetchItemBufferTwo(uint _upc) public view returns
     (
-        uint sku,
-        uint upc,
+        uint itemSKU,
+        uint itemUPC,
         uint productID,
         string productNotes,
         uint productPrice,
