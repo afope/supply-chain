@@ -34,12 +34,16 @@ The DApp User Interface when running should look like...
 
 Below you will find the activity diagram, sequence diagram, state diagram, and UML class diagram. You will also find the libraries used for the project and what they’re used for.
 
+### Activity Diagram
 ![truffle test](images/activity_diagram.png)
 
+### Sequence Diagram
 ![truffle test](images/sequence_diagram.png)
 
+### State Diagram
 ![truffle test](images/state_diagram.png)
 
+### UML Class Diagram
 ![truffle test](images/uml_class.png)
 
 ## Libraries Used
